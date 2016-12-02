@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ $(facter virtual) = 'virtualbox' ] ; then
+if [[ $(facter virtual) =~ ^(virtualbox|kvm)$ ]] ; then
     rm /etc/udev/rules.d/70-persistent-net.rules
     mkdir /etc/udev/rules.d/70-persistent-net.rules
     rm /lib/udev/rules.d/75-persistent-net-generator.rules

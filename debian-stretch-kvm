@@ -1,14 +1,15 @@
 {
-    "variables": {
-        "debian_version": "7.9.0"
-    },
+  "variables": {
+      "debian_build": "weekly-builds",
+      "debian_version": "testing"
+  },
   "builders": [
     {
-      "type": "virtualbox-iso",
+      "type": "qemu",
       "boot_command": [
         "<esc><wait>",
         "install <wait>",
-        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed_wheezy.cfg <wait>",
+        "preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed_stretch_kvm.cfg <wait>",
         "debian-installer=en_US <wait>",
         "auto <wait>",
         "locale=en_US <wait>",
@@ -24,30 +25,28 @@
       ],
       "boot_wait": "10s",
       "disk_size": 32768,
-      "guest_os_type": "Debian_64",
+      "format": "qcow2",
+      "disk_interface": "virtio",
       "headless": true,
       "http_directory": "http",
-      "iso_checksum_type": "none",
-      "iso_url": "http://cdimage.debian.org/cdimage/archive/{{user `debian_version`}}/amd64/iso-cd/debian-{{user `debian_version`}}-amd64-netinst.iso",
+      "iso_checksum_type": "md5",
+      "iso_checksum": "608c6bb838d7963a12d1bec853504ffa",
+      "iso_url": "http://cdimage.debian.org/cdimage/{{user `debian_build`}}/amd64/iso-cd/debian-{{user `debian_version`}}-amd64-netinst.iso",
       "ssh_username": "vagrant",
       "ssh_password": "vagrant",
       "ssh_port": 22,
       "ssh_wait_timeout": "10000s",
       "shutdown_command": "echo 'vagrant'|sudo -S /sbin/shutdown -hP now",
-      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
-      "virtualbox_version_file": ".vbox_version",
       "vm_name": "debian-{{user `debian_version`}}-amd64",
-      "vboxmanage": [
-        [ "modifyvm", "{{.Name}}", "--memory", "512" ],
-        [ "modifyvm", "{{.Name}}", "--cpus", "1" ]
-      ]
+      "accelerator": "kvm",
+      "net_device": "virtio-net"
     }
   ],
   "post-processors": [
     {
       "type": "vagrant",
       "compression_level": "9",
-      "output": "debian-{{user `debian_version`}}-amd64_{{.Provider}}.box"
+      "output": "debian-{{user `debian_version`}}-amd64_{{.Provider}}.qcow2"
     }
   ],
   "provisioners": [
@@ -60,8 +59,8 @@
         "scripts/networking.sh",
         "scripts/sudoers.sh",
         "scripts/vagrant.sh",
-        "scripts/addguest.sh",
         "scripts/puppet.sh",
+        "scripts/addguest.sh",
         "scripts/cleanup.sh"
       ]
     }
